@@ -1,31 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { nanoid } from 'nanoid';
+import { useMemo } from 'react';
 import ContactForm from './ContactForm/ContactForm.jsx';
 import ContactList from './ContactList/ContactList.jsx';
 import FilterList from './FilterList/FilterList.jsx';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { createContact, deleteContact, filterContact } from 'store/phonebook/phoneBookReducer.js';
 
 const App = () => {
-  const [contacts, setContacts] = useState([]);
-  const [filter, setFilter] = useState('');
-  const isFirstRender = useRef(true);
+  const { contactList: contacts } = useSelector(state => state.phoneBook);
+  const { filter } = useSelector(state => state.phoneBook)
+  const dispatch = useDispatch();
 
-
-  useEffect(() => {
-    const localeContacts = localStorage.getItem('localeContacts');
-    if (localeContacts) {
-      return setContacts(JSON.parse(localeContacts));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return; 
-    }
-    localStorage.setItem('localeContacts', JSON.stringify(contacts));
-  }, [contacts]);
-
-  const addContact = ({ name: nameProps, number: numberProps }) => {
+  const addContact = value => {
+    const { name: nameProps, number: numberProps } = value;
 
     const includsName = contacts.find(
       ({ name, number }) =>
@@ -36,33 +23,23 @@ const App = () => {
       alert(`Name ${nameProps}, phone ${numberProps} is already in contacts`);
       return;
     }
-    const contact = {
-      id: nanoid(),
-      name: nameProps,
-      number: numberProps,
-    };
-
-    setContacts(prevContacts => {
-      return [...prevContacts, contact];
-    });
+    dispatch(createContact(value));
   };
 
   const changeFilter = e => {
-    setFilter(e.currentTarget.value);
+    const filterValue = e.currentTarget.value;
+    dispatch(filterContact(filterValue))
   };
 
   const getVisibleContacts = useMemo(() => {
-   
     const normalizedFilter = filter.toLowerCase();
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
-  }, [contacts, filter])
+  }, [contacts, filter]);
 
-  const deletContact = contactId => {
-    setContacts(prevContacts => {
-      return prevContacts.filter(contact => contact.id !== contactId);
-    });
+  const deleteContactHandler = (contactId) => {
+    dispatch(deleteContact(contactId));
   };
 
   return (
@@ -71,7 +48,10 @@ const App = () => {
       <ContactForm onSubmitForm={addContact} />
       <h2>Contacts</h2>
       <FilterList value={filter} onChange={changeFilter} />
-      <ContactList contacts={getVisibleContacts} onDeletContact={deletContact} />
+      <ContactList
+        contacts={getVisibleContacts}
+        onDeletContact={deleteContactHandler}
+      />
     </div>
   );
 };
