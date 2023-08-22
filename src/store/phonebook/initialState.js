@@ -1,4 +1,5 @@
 
 export const initialState = {
-    phonebook: { contactList: [], filter: "" }
+    phonebook: { contactList: [] },
+    filters: { filter: "" }
 }

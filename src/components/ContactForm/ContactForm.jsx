@@ -1,13 +1,31 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
-import PropTypes from 'prop-types';
 import css from './contactform.module.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { createContact } from 'store/phonebook/phoneBookReducer';
 
 
-const ContactForm = ({onSubmitForm}) => {
+const ContactForm = () => {
+  const { contactList: contacts } = useSelector(state => state.phoneBook);
+  const dispatch = useDispatch();
+
+  const addContact = value => {
+    const { name: nameProps, number: numberProps } = value;
+
+    const includsName = contacts.find(
+      ({ name, number }) =>
+        name.toLowerCase() === nameProps.toLowerCase() || number === numberProps
+    );
+
+    if (includsName) {
+      alert(`Name ${nameProps}, phone ${numberProps} is already in contacts`);
+      return;
+    }
+    dispatch(createContact(value));
+  };
 
   const handleSubmit = (values, {resetForm}) => {
-    onSubmitForm(values);
+    addContact (values);
     resetForm()
   };
 
@@ -46,8 +64,4 @@ const ContactForm = ({onSubmitForm}) => {
   }
 
 export default ContactForm;
-
-ContactForm.propTypes = {
-  onSubmitForm: PropTypes.func.isRequired,
-}
 

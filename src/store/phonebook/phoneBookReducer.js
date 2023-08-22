@@ -19,12 +19,9 @@ const phoneBookReducer = createSlice({
       };
     },
 
-    filterContact: (state, action) => {
-      state.filter = action.payload;
-    }
   },
 });
 
-export const { createContact, deleteContact, filterContact } = phoneBookReducer.actions;
+export const { createContact, deleteContact } = phoneBookReducer.actions;
 
 export default phoneBookReducer.reducer;
